@@ -1,0 +1,7 @@
+F401 : New York : Los Angeles : 150
+F502 : Chicago : Miami : 120
+F603 : San Francisco : New York : 200
+F805 : Boston : Las Vegas : 55
+F906 : Denver : Houston : 90
+F1007 : Atlanta : Washington D.C. : 70
+F777 : Delhi : Indore : 77

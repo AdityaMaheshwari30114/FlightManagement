@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <limits>
 #include <windows.h>
+#include<algorithm>
+
 
 using namespace std;
 
@@ -45,6 +47,10 @@ public:
 
     void cancelReservation() {
         seats++;
+    }
+
+    void setSeats(int newSeatCount) {
+        seats = newSeatCount;
     }
 
     void updateSeatCountInFile() const {
@@ -161,6 +167,100 @@ void cancelReservation(const vector<shared_ptr<Airline>>& flights) {
     cout << "Flight not found!" << endl;
 }
 
+// Function to add a new flight to the system
+void addFlight(vector<shared_ptr<Airline>>& flights) {
+    string flightNumber, destination, departure;
+    int seats;
+
+    cout << "Enter Flight Number: ";
+    cin >> flightNumber;
+    cout << "Enter Destination: ";
+    cin >> destination;
+    cout << "Enter Departure: ";
+    cin >> departure;
+    cout << "Enter Number of Seats: ";
+    cin >> seats;
+
+    flights.push_back(make_shared<Airline>(flightNumber, destination, departure, seats));
+    saveFlightsToFile(flights);  // Save the updated list of flights to file
+    cout << "New flight added successfully!" << endl;
+}
+
+// Function to remove a flight from the system
+void removeFlight(vector<shared_ptr<Airline>>& flights) {
+    string flightNumber;
+    cout << "Enter Flight Number to remove: ";
+    cin >> flightNumber;
+
+    auto it = remove_if(flights.begin(), flights.end(), [&flightNumber](const shared_ptr<Airline>& flight) {
+        return flight->getFlight() == flightNumber;
+    });
+
+    if (it != flights.end()) {
+        flights.erase(it, flights.end());
+        saveFlightsToFile(flights);  // Save the updated list of flights to file
+        cout << "Flight " << flightNumber << " removed successfully!" << endl;
+    } else {
+        cout << "Flight not found!" << endl;
+    }
+}
+
+// Function to update the seat count of a flight
+void updateSeatCount(vector<shared_ptr<Airline>>& flights) {
+    string flightNumber;
+    int newSeatCount;
+
+    cout << "Enter Flight Number to update seats: ";
+    cin >> flightNumber;
+
+    // Find the flight with the given flight number
+    for (auto& flight : flights) {
+        if (flight->getFlight() == flightNumber) {
+            cout << "Current seat count: " << flight->getSeats() << endl;
+            cout << "Enter new seat count: ";
+            cin >> newSeatCount;
+            flight->setSeats(newSeatCount);  // Update the seat count
+
+            flight->updateSeatCountInFile();  // Update seat count in file
+            cout << "Seat count updated successfully!" << endl;
+            return;
+        }
+    }
+
+    cout << "Flight not found!" << endl;
+}
+
+void adminPanel(vector<shared_ptr<Airline>>& flights) {
+    int choice;
+    while (true) {
+        system("cls");
+        cout << "Admin Panel:\n";
+        cout << "1. Add New Flight\n";
+        cout << "2. Remove Flight\n";
+        cout << "3. Update Flight Seat Count\n";
+        cout << "4. Exit Admin Panel\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                addFlight(flights);
+                break;
+            case 2:
+                removeFlight(flights);
+                break;
+            case 3:
+                updateSeatCount(flights);
+                break;
+            case 4:
+                return;
+            default:
+                cout << "Invalid choice. Please try again!" << endl;
+                break;
+        }
+    }
+}
+
 int main() {
     vector<shared_ptr<Airline>> flights = {
         make_shared<Airline>("F401", "New York", "Los Angeles", 150),
@@ -184,46 +284,53 @@ int main() {
         cout << "\t 2. Display Available Flights" << endl;
         cout << "\t 3. Search for a Flight by Destination" << endl;
         cout << "\t 4. Cancel a Reservation" << endl;
-        cout << "\t 5. Exit" << endl;
+        cout << "\t 5. Admin Panel" << endl;
+        cout << "\t 6. Exit" << endl;
         cout << "\t Enter Your Choice: ";
         int choice;
         cin >> choice;
 
-        if (cin.fail() || choice < 1 || choice > 5) {
+        if (cin.fail() || choice < 1 || choice > 6) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid input. Please enter a number between 1 and 5." << endl;
+            cout << "Invalid input. Please enter a number between 1 and 6." << endl;
             Sleep(2000);
             continue;
         }
 
         switch (choice) {
-        case 1:
-            Airline::displayFlights();
-            reserveSeat(flights);
-            Sleep(3000);
-            break;
-        case 2:
-            Airline::displayFlights();
-            Sleep(3000);
-            break;
-        case 3: {
-            string destination;
-            cout << "Enter Destination: ";
-            cin >> destination;
-            Airline::searchFlight(destination);
-            Sleep(3000);
-            break;
+            case 1:
+                reserveSeat(flights);
+                break;
+            case 2:
+                Airline::displayFlights();
+                break;
+            case 3:
+                {
+                    string destination;
+                    cout << "Enter destination to search: ";
+                    cin >> destination;
+                    Airline::searchFlight(destination);
+                    break;
+                }
+            case 4:
+                cancelReservation(flights);
+                break;
+            case 5:
+                adminPanel(flights);
+                break;
+            case 6:
+                exit = true;
+                break;
+            default:
+                cout << "Invalid choice. Please try again!" << endl;
+                break;
         }
-        case 4:
-            cancelReservation(flights);
-            Sleep(3000);
-            break;
-        case 5:
-            exit = true;
-            cout << "Thank you for using the Airline Management System. Goodbye!" << endl;
-            Sleep(3000);
-            break;
+
+        if (!exit) {
+            cout << "\nPress any key to continue...";
+            getchar();
+            getchar(); // Wait for user input before continuing
         }
     }
 
