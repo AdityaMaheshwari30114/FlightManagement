@@ -1,6 +1,4 @@
 # Flight Management System
-
-## Project Overview
 The **Flight Management System**is a console-based application designed to streamline the management of airline flights. It provides features for users to reserve and cancel seats, search for flights, and view flight details. Administrators can manage flights, update seat counts, and add or remove flights from the system.
 
 ---
